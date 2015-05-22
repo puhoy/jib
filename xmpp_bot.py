@@ -14,8 +14,6 @@ import sys
 
 
 import sleekxmpp
-
-from irc_testbot_old import IrcBot
 import logging
 
 import queue
