@@ -46,7 +46,7 @@ def get_sender_from_event(event):
 
 
 class IrcBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, nickname, server, port=6667, logfile=False, in_queue=None, out_queue=None):
+    def __init__(self, nickname, server, port=6667, logfile=False, channel=None, in_queue=None, out_queue=None):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.reactor.execute_every(1, self.process_queue)
         self.in_queue = in_queue
@@ -58,15 +58,16 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         self.settings = {}
         self.settings_path = 'settings.json'
         self.load_settings()
-
+        if channel:
+            self.settings.get('channels').append(channel)
 
         logging.basicConfig(level='DEBUG')
 
         self.xmpp_commands = {
-            'join': self.xmpp_command_join,
-            'help': self.xmpp_command_help,
-            'part': self.xmpp_command_part,
-            'add_op': self.xmpp_command_add_op,
+            'irc_join': self.xmpp_command_join,
+            'irc_help': self.xmpp_command_help,
+            'irc_part': self.xmpp_command_part,
+            'irc_add_op': self.xmpp_command_add_op,
             #'op': self.xmpp_command_add_op
 
         }
@@ -84,9 +85,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
 
 
     def load_settings(self):
-
             with open(self.settings_path, 'r') as settingsfile:
-
                 self.settings = json.loads(''.join(settingsfile))
 
                 """
@@ -125,7 +124,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         cmd = self.get_from_queue()
         if cmd:
             if cmd.get('command') in self.xmpp_commands.keys():
-                self.xmpp_commands[cmd](cmd)
+                self.xmpp_commands[cmd.get('command')](cmd)
         #print('now')
         pass
 
@@ -235,11 +234,11 @@ class IrcBot(irc.bot.SingleServerIRCBot):
     """xmpp commands"""
     def xmpp_command_join(self, cmd):
         c = self.connection
-        c.join(cmd.get('room'))
+        c.join(cmd.get('channel'))
 
     def xmpp_command_part(self, cmd):
         c = self.connection
-        c.part(cmd.get('room'))
+        c.part(cmd.get('channel'))
 
     def xmpp_command_add_op(self, cmd):
         self.ops.append(cmd.get('user'))

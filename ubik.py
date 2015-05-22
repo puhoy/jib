@@ -17,6 +17,7 @@ else:
 
 
 irc_networks = {}
+import threading
 
 if __name__ == '__main__':
     # Setup the command line arguments.
@@ -68,7 +69,6 @@ if __name__ == '__main__':
     #xmpp.ca_certs = "./kwoh.de.crt"
 
 
-
     # Connect to the XMPP server and start processing XMPP stanzas.
     if xmpp_bot.connect():
         # If you do not have the dnspython library installed, you will need
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         #
         # if xmpp.connect(('talk.google.com', 5222)):
         #     ...
-        xmpp_bot.process(threaded=True, blocking=False)
+        xmpp_bot.process(blocking=False)
         #print("Done")
     else:
         print("Unable to connect.")
@@ -86,29 +86,21 @@ if __name__ == '__main__':
 
 
     while True:
-        while not xmpp_bot.out_queue.empty():
-            cmd = xmpp_bot.out_queue.get(True, 0.1)
-            if cmd.get('command', None) == 'irc_connect':
-                logging.info('got connect to %s' % cmd.get('server'))
-                irc_networks[cmd.get('server')] = IrcBot(nick='ubik__', server=cmd.get('server'), port=6667, in_queue=queue.Queue(), logfile=cmd.get('server')+'.log')
-                irc_networks[cmd.get('server')].start()
-            elif cmd.get('command', None) == 'irc_join':
-                # irc_networks[cmd.get('server')].join(cmd.get('room'))
-                logging.info('got join to %s' % cmd.get('room'))
-                irc_networks[cmd.get('server')].in_queue.put(
-                    {'command': 'join',
-                     'room': cmd.get('room')
-                     }
-                )
-            elif cmd.get('command', None) == 'irc_add_op':
-                irc_networks[cmd.get('server')].in_queue.put(
-                    {'command': 'add_op',
-                     'user': cmd.get('user')
-                     }
-                )
-            elif cmd.get('command', None) == 'irc_rm_op':
-                irc_networks[cmd.get('server')].in_queue.put(
-                    {'command': 'rm_op',
-                     'user': cmd.get('user')
-                     }
-                )
+        logging.debug('waiting for commands...')
+        cmd = xmpp_bot.out_queue.get(True)
+        print('got cmd!')
+        logging.debug('command: %s' % cmd)
+        cmd_str = cmd.get('command', None)
+        if cmd_str == 'irc_connect':
+            logging.info('got connect to %s' % cmd.get('server'))
+            irc_networks[cmd.get('server')] = IrcBot(nickname='kein_bot__', server=cmd.get('server'), port=6667, in_queue=queue.Queue(), logfile=True)
+            threading.Thread(
+                target=irc_networks[cmd.get('server')].start
+            ).start()
+        elif cmd_str:
+            if cmd_str.startswith('irc_'):
+                logging.debug('command: %s' % cmd)
+                try:
+                    irc_networks[cmd.get('server')].in_queue.put(cmd)
+                except:
+                    pass

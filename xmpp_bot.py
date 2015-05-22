@@ -62,7 +62,6 @@ class XmppBot(sleekxmpp.ClientXMPP):
                          '!help': self.command_help,
                          '!irc_join': self.command_irc_join,
                          '!irc_connect': self.command_irc_connect,
-                         '!irc': self.command_irc,
                          '!irc_part': self.command_irc_part,
                          '!irc_add_op': self.command_irc_add_op
                          }
@@ -109,48 +108,55 @@ class XmppBot(sleekxmpp.ClientXMPP):
                     else:
                         msg.reply("cmd not found...").send()
 
-    def command_irc(self, sender, msg):
-        self.send_message(mto=sender,
-                        mbody="irc networks: %s" % (','.join(self.irc_networks.keys())),
-                        mtype='chat')
+    #def command_irc(self, sender, msg):
+    #    self.send_message(mto=sender,
+    #                    mbody="irc networks: %s" % (','.join(self.irc_networks.keys())),
+    #                    mtype='chat')
 
     def command_irc_connect(self, sender, msg):
-        if len(msg['body'].split(' ')) < 2:
+        if len(msg['body'].strip().split(' ')) < 2:
            msg.reply("usage: !irc_connect <server>").send()
-           return
-        server = msg['body'].split(' ')[1]
-        cmd = {
-            'command': 'irc_connect',
-            'server': server
-        }
-        self.out_queue.put(cmd)
-        msg.reply("connecting to %s!" % (server)).send()
+        else:
+            server = msg['body'].split(' ')[1]
+            cmd = {
+                'command': 'irc_connect',
+                'server': server
+            }
+            self.out_queue.put(cmd)
+            msg.reply("connecting to %s!" % (server)).send()
 
     def command_irc_join(self, sender, msg):
         server = msg['body'].split(' ')[1]
+        channel = msg['body'].split(' ')[2]
+        msg.reply("joining %s!" % (channel)).send()
         cmd = {
             'command': 'irc_join',
             'server': server,
-            'room': msg['body'].split(' ')[2]
+            'channel': channel
         }
         self.out_queue.put(cmd)
+
 
 
     def command_irc_add_op(self, sender, msg):
-        server = msg['body'].split(' ')[1]
+        server = msg['body'].strip().split(' ')[1]
+        user = msg['body'].strip().split(' ')[2]
         cmd = {
             'command': 'irc_add_op',
             'server': server,
-            'user': msg['body'].split(' ')[2]
+            'user': user
         }
         self.out_queue.put(cmd)
+        #
 
     def command_irc_part(self, sender, msg):
-        server = msg['body'].split(' ')[1]
+        server = msg['body'].strip().split(' ')[1]
+        channel = msg['body'].strip().split(' ')[2]
+        msg.reply("leaving %s!" % (channel)).send()
         cmd = {
             'command': 'irc_part',
             'server': server,
-            'room': msg['body'].split(' ')[2]
+            'channel': channel
         }
         self.out_queue.put(cmd)
 
