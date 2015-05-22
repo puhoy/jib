@@ -63,9 +63,9 @@ class XmppBot(sleekxmpp.ClientXMPP):
                          '!irc_join': self.command_irc_join,
                          '!irc_connect': self.command_irc_connect,
                          '!irc_part': self.command_irc_part,
-                         '!irc_add_op': self.command_irc_add_op
+                         '!irc_add_op': self.command_irc_add_op,
+                         '!die': self.command_die
                          }
-
 
     def start(self, event):
         """
@@ -108,11 +108,6 @@ class XmppBot(sleekxmpp.ClientXMPP):
                     else:
                         msg.reply("cmd not found...").send()
 
-    #def command_irc(self, sender, msg):
-    #    self.send_message(mto=sender,
-    #                    mbody="irc networks: %s" % (','.join(self.irc_networks.keys())),
-    #                    mtype='chat')
-
     def command_irc_connect(self, sender, msg):
         if len(msg['body'].strip().split(' ')) < 2:
            msg.reply("usage: !irc_connect <server> (<nickname>)").send()
@@ -131,42 +126,58 @@ class XmppBot(sleekxmpp.ClientXMPP):
 
 
     def command_irc_join(self, sender, msg):
-        server = msg['body'].split(' ')[1]
-        channel = msg['body'].split(' ')[2]
-        msg.reply("joining %s!" % (channel)).send()
-        cmd = {
-            'command': 'irc_join',
-            'server': server,
-            'channel': channel
-        }
-        self.out_queue.put(cmd)
-
-
+        if len(msg['body'].strip().split(' ')) == 3:
+            server = msg['body'].split(' ')[1]
+            channel = msg['body'].split(' ')[2]
+            msg.reply("joining %s!" % (channel)).send()
+            cmd = {
+                'command': 'irc_join',
+                'server': server,
+                'channel': channel
+            }
+            self.out_queue.put(cmd)
+        else:
+            self.send_message(mto=sender,
+                        mbody='usage: !irc_join <network> <channel>',
+                        mtype='chat')
 
     def command_irc_add_op(self, sender, msg):
-        server = msg['body'].strip().split(' ')[1]
-        user = msg['body'].strip().split(' ')[2]
-        cmd = {
-            'command': 'irc_add_op',
-            'server': server,
-            'user': user
-        }
-        self.out_queue.put(cmd)
-        #
+        if len(msg['body'].strip().split(' ')) != 3:
+            self.send_message(mto=sender,
+                        mbody='usage: !irc_add_op <network> <username>',
+                        mtype='chat')
+        else:
+            server = msg['body'].strip().split(' ')[1]
+            user = msg['body'].strip().split(' ')[2]
+            cmd = {
+                'command': 'irc_add_op',
+                'server': server,
+                'user': user
+            }
+            self.out_queue.put(cmd)
 
     def command_irc_part(self, sender, msg):
-        server = msg['body'].strip().split(' ')[1]
-        channel = msg['body'].strip().split(' ')[2]
-        msg.reply("leaving %s!" % (channel)).send()
-        cmd = {
-            'command': 'irc_part',
-            'server': server,
-            'channel': channel
-        }
-        self.out_queue.put(cmd)
+        if len(msg['body'].strip().split(' ')) == 3:
+            server = msg['body'].strip().split(' ')[1]
+            channel = msg['body'].strip().split(' ')[2]
+            msg.reply("leaving %s!" % (channel)).send()
+            cmd = {
+                'command': 'irc_part',
+                'server': server,
+                'channel': channel
+            }
+            self.out_queue.put(cmd)
+        else:
+            self.send_message(mto=sender,
+                        mbody='usage: !irc_part <network> <channel>',
+                        mtype='chat')
 
     def command_help(self, sender, msg):
         self.send_message(mto=sender,
                         mbody="available commands: %s" % (','.join(self.commands.keys())),
                         mtype='chat')
+
+    def command_die(self,  sender, msg):
+        cmd = {'command': 'die'}
+        self.out_queue.put(cmd)
             #msg.reply("Thanks for sending\n%(body)s" % msg).send()

@@ -58,6 +58,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         self.settings = {}
         self.settings_path = 'settings.json'
         self.load_settings()
+
         if channel:
             self.settings.get('channels').append(channel)
 

@@ -84,27 +84,39 @@ if __name__ == '__main__':
         print("Unable to connect.")
     logging.info('going into loop...')
 
-
-    while True:
-        logging.debug('waiting for commands...')
-        cmd = xmpp_bot.out_queue.get(True)
-        print('got cmd!')
-        logging.debug('command: %s' % cmd)
-        cmd_str = cmd.get('command', None)
-        if cmd_str == 'irc_connect':
-            logging.info('got connect to %s' % cmd.get('server'))
-            server = cmd.get('server', None)
-            port = cmd.get('port', 6667)
-            nickname = cmd.get('nickname', 'keinbot')
-            irc_networks[cmd.get('server')] = IrcBot(nickname=nickname, server=server, port=port,
-                                                     in_queue=queue.Queue(), logfile=True)
-            threading.Thread(
-                target=irc_networks[cmd.get('server')].start
-            ).start()
-        elif cmd_str:
-            if cmd_str.startswith('irc_'):
-                logging.debug('command: %s' % cmd)
-                try:
-                    irc_networks[cmd.get('server')].in_queue.put(cmd)
-                except:
-                    pass
+    run = True
+    while run:
+        #logging.debug('waiting for commands...')
+        try:
+            cmd = xmpp_bot.out_queue.get(True, 1)
+        except Exception as e:
+            cmd = ''
+        if cmd:
+            print('got command!')
+            logging.debug('command: %s' % cmd)
+            cmd_str = cmd.get('command', None)
+            if cmd_str == 'irc_connect':
+                logging.info('got connect to %s' % cmd.get('server'))
+                server = cmd.get('server', None)
+                port = cmd.get('port', 6667)
+                nickname = cmd.get('nickname', 'keinbot')
+                irc_networks[cmd.get('server')] = IrcBot(nickname=nickname, server=server, port=port,
+                                                         in_queue=queue.Queue(), logfile=True)
+                threading.Thread(
+                    target=irc_networks[cmd.get('server')].start
+                ).start()
+            elif cmd_str:
+                if cmd_str.startswith('irc_'):
+                    logging.debug('command: %s' % cmd)
+                    try:
+                        irc_networks[cmd.get('server')].in_queue.put(cmd)
+                    except Exception as e:
+                        errstr = 'something went wrong: %s (%s)' % (e, sys.exc_info()[0])
+                        logging.info(errstr)
+                        pass
+            if cmd_str == 'die':
+                for network in irc_networks.values():
+                    network.disconnect('killed')
+                print('bye!')
+                xmpp_bot.disconnect()
+                run = False
