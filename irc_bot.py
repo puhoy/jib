@@ -360,7 +360,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
 
 def main():
     optp = OptionParser()
-    optp.add_option('-n', '--nick', dest='nickname')
+    optp.add_option('-n', '--nick', dest='nick')
     optp.add_option('-s', '--server', dest='server')
     optp.add_option('-p', '--port', dest='port', default=6667)
     optp.add_option('-c', '--channel', dest='channel')
