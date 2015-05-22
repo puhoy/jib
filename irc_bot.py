@@ -125,8 +125,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         cmd = self.get_from_queue()
         if cmd:
             if cmd.get('command') in self.xmpp_commands.keys():
-            self.xmpp_commands[cmd](cmd)
-
+                self.xmpp_commands[cmd](cmd)
         #print('now')
         pass
 

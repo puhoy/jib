@@ -7,7 +7,7 @@ from optparse import OptionParser
 import queue
 
 from xmpp_bot import XmppBot
-from irc_testbot_old import IrcBot
+from irc_bot import IrcBot
 
 if sys.version_info < (3, 0):
     reload(sys)
