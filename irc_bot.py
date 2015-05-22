@@ -35,6 +35,7 @@ import logging
 import json
 import datetime
 from optparse import OptionParser
+import sys
 
 if sys.version_info < (3, 0):
     reload(sys)
