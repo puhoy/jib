@@ -115,15 +115,20 @@ class XmppBot(sleekxmpp.ClientXMPP):
 
     def command_irc_connect(self, sender, msg):
         if len(msg['body'].strip().split(' ')) < 2:
-           msg.reply("usage: !irc_connect <server>").send()
+           msg.reply("usage: !irc_connect <server> (<nickname>)").send()
         else:
             server = msg['body'].split(' ')[1]
             cmd = {
                 'command': 'irc_connect',
                 'server': server
             }
+            '''if nickname given'''
+            if len(msg['body'].strip().split(' ')) == 3:
+                cmd['nickname'] = msg['body'].strip().split(' ')[2]
+
             self.out_queue.put(cmd)
             msg.reply("connecting to %s!" % (server)).send()
+
 
     def command_irc_join(self, sender, msg):
         server = msg['body'].split(' ')[1]

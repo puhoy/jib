@@ -93,7 +93,11 @@ if __name__ == '__main__':
         cmd_str = cmd.get('command', None)
         if cmd_str == 'irc_connect':
             logging.info('got connect to %s' % cmd.get('server'))
-            irc_networks[cmd.get('server')] = IrcBot(nickname='kein_bot__', server=cmd.get('server'), port=6667, in_queue=queue.Queue(), logfile=True)
+            server = cmd.get('server', None)
+            port = cmd.get('port', 6667)
+            nickname = cmd.get('nickname', 'keinbot')
+            irc_networks[cmd.get('server')] = IrcBot(nickname=nickname, server=server, port=port,
+                                                     in_queue=queue.Queue(), logfile=True)
             threading.Thread(
                 target=irc_networks[cmd.get('server')].start
             ).start()
