@@ -37,6 +37,8 @@ import datetime
 from optparse import OptionParser
 import sys
 
+import queue
+
 if sys.version_info < (3, 0):
     reload(sys)
     sys.setdefaultencoding('utf8')
@@ -50,14 +52,13 @@ def get_sender_from_event(event):
     return event.source.split("!", 1)[0]
 
 
-
-
 class IrcBot(irc.bot.SingleServerIRCBot):
     def __init__(self, nickname, server, port=6667, logfile=False, channel=None, in_queue=None, out_queue=None):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.reactor.execute_every(1, self.process_queue)
+
         self.in_queue = in_queue
         self.out_queue = out_queue
+        self.reactor.execute_every(1, self.process_queue)
 
         self.ops = []
 
@@ -69,7 +70,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         if channel:
             self.settings.get('channels').append(channel)
 
-        logging.basicConfig(level='DEBUG')
+        #logging.basicConfig(level='DEBUG')
 
         self.xmpp_commands = {
             'irc_join': self.xmpp_command_join,
@@ -127,12 +128,16 @@ class IrcBot(irc.bot.SingleServerIRCBot):
 
     def get_from_queue(self):
         if self.in_queue:
-            return self.in_queue.get()
-        return None
+            try:
+                cmd = self.in_queue.get(block=False)
+            except:
+                cmd = None
+            return cmd
 
     def process_queue(self):
         #self.connection.notice(self.channel, text='test!')
         cmd = self.get_from_queue()
+        #print('plöpp')
         if cmd:
             if cmd.get('command') in self.xmpp_commands.keys():
                 self.xmpp_commands[cmd.get('command')](cmd)
