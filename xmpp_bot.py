@@ -174,7 +174,7 @@ class XmppBot(sleekxmpp.ClientXMPP):
 
     def command_help(self, sender, msg):
         self.send_message(mto=sender,
-                        mbody="available commands: %s" % (','.join(self.commands.keys())),
+                        mbody="available commands: %s" % (', '.join(self.commands.keys())),
                         mtype='chat')
 
     def command_die(self,  sender, msg):

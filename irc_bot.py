@@ -34,7 +34,13 @@ import logging
 
 import json
 import datetime
+from optparse import OptionParser
 
+if sys.version_info < (3, 0):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+else:
+    raw_input = input
 
 def get_message_from_event(event):
     return event.arguments[0].split(":", 1)[0].strip()
@@ -352,7 +358,21 @@ class IrcBot(irc.bot.SingleServerIRCBot):
     """irc commands end"""
 
 def main():
-    bot = IrcBot('keinbot', 'irc.freenode.net', 6667, logfile=True)
+    optp = OptionParser()
+    optp.add_option('-n', '--nick', dest='nickname')
+    optp.add_option('-s', '--server', dest='server')
+    optp.add_option('-p', '--port', dest='port', default=6667)
+    optp.add_option('-c', '--channel', dest='channel')
+    opts, args = optp.parse_args()
+
+    if opts.nick is None:
+        opts.nick = raw_input("Nick: ")
+    if opts.server is None:
+        opts.server = raw_input("Server: ")
+    if opts.channel is None:
+        opts.channel = raw_input("Channel: ")
+
+    bot = IrcBot(opts.nick, opts.server, opts.port, logfile=True, channel=opts.channel)
     bot.start()
 
 if __name__ == "__main__":
