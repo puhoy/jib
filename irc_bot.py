@@ -85,6 +85,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
 
 
     def load_settings(self):
+        try:
             with open(self.settings_path, 'r') as settingsfile:
                 self.settings = json.loads(''.join(settingsfile))
 
@@ -94,6 +95,8 @@ class IrcBot(irc.bot.SingleServerIRCBot):
                 """
                 self.ops = self.settings.get('ops', None)
                 print(self.ops)
+        except:
+            pass
 
 
     def save_settings(self):
