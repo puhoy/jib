@@ -67,7 +67,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
             'help': self.xmpp_command_help,
             'part': self.xmpp_command_part,
             'add_op': self.xmpp_command_add_op,
-            'op': self.xmpp_command_op()
+            #'op': self.xmpp_command_add_op
 
         }
 
@@ -115,13 +115,18 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         if self.out_queue:
             self.out_queue.put(cmd)
 
-    def get_from_queue(self, cmd):
+    def get_from_queue(self):
         if self.in_queue:
             return self.in_queue.get()
         return None
 
     def process_queue(self):
         #self.connection.notice(self.channel, text='test!')
+        cmd = self.get_from_queue()
+        if cmd:
+            if cmd.get('command') in self.xmpp_commands.keys():
+            self.xmpp_commands[cmd](cmd)
+
         #print('now')
         pass
 
@@ -229,30 +234,25 @@ class IrcBot(irc.bot.SingleServerIRCBot):
             c.notice(nick, "Not understood: " + cmd)
 
     """xmpp commands"""
-    def xmpp_command_join(self, msg):
-        if msg.split(' ') == 2:
-            c = self.connection
-            c.join(msg.split(' ')[1])
+    def xmpp_command_join(self, cmd):
+        c = self.connection
+        c.join(cmd.get('room'))
 
-    def xmpp_command_part(self, msg):
-        if msg.split(' ') == 2:
-            c = self.connection
-            c.part(msg.split(' ')[1])
+    def xmpp_command_part(self, cmd):
+        c = self.connection
+        c.part(cmd.get('room'))
 
-    def xmpp_command_add_op(self, msg):
-        if msg.split(' ') == 2:
-            self.ops.append(msg.split(' ')[1])
+    def xmpp_command_add_op(self, cmd):
+        self.ops.append(cmd.get('user'))
+        self.save_settings()
+        pass
+
+    def xmpp_command_rm_op(self, cmd):
+        try:
+            self.ops.remove(cmd.get('user'))
             self.save_settings()
-        pass
-
-    def xmpp_command_rm_op(self, msg):
-        if msg.split(' ') == 2:
-            try:
-                self.ops.remove(msg.split(' ')[1])
-                self.save_settings()
-            except:
+        except:
                 pass
-        pass
 
     def xmpp_command_help(self):
         c = self.connection

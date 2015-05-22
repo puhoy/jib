@@ -65,7 +65,8 @@ class XmppBot(sleekxmpp.ClientXMPP):
                          '!irc_join': self.command_irc_join,
                          '!irc_connect': self.command_irc_connect,
                          '!irc': self.command_irc,
-                         '!irc_part': self.command_irc_part
+                         '!irc_part': self.command_irc_part,
+                         '!irc_add_op': self.command_irc_add_op
                          }
 
 
@@ -136,6 +137,16 @@ class XmppBot(sleekxmpp.ClientXMPP):
         }
         self.out_queue.put(cmd)
 
+
+    def command_irc_add_op(self, sender, msg):
+        server = msg['body'].split(' ')[1]
+        cmd = {
+            'command': 'irc_add_op',
+            'server': server,
+            'user': msg['body'].split(' ')[2]
+        }
+        self.out_queue.put(cmd)
+
     def command_irc_part(self, sender, msg):
         server = msg['body'].split(' ')[1]
         cmd = {
@@ -149,6 +160,4 @@ class XmppBot(sleekxmpp.ClientXMPP):
         self.send_message(mto=sender,
                         mbody="available commands: %s" % (','.join(self.commands.keys())),
                         mtype='chat')
-
-
             #msg.reply("Thanks for sending\n%(body)s" % msg).send()

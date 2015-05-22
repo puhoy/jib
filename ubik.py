@@ -83,6 +83,8 @@ if __name__ == '__main__':
     else:
         print("Unable to connect.")
     logging.info('going into loop...')
+
+
     while True:
         while not xmpp_bot.out_queue.empty():
             cmd = xmpp_bot.out_queue.get(True, 0.1)
@@ -90,11 +92,23 @@ if __name__ == '__main__':
                 logging.info('got connect to %s' % cmd.get('server'))
                 irc_networks[cmd.get('server')] = IrcBot(nick='ubik__', server=cmd.get('server'), port=6667, in_queue=queue.Queue(), logfile=cmd.get('server')+'.log')
                 irc_networks[cmd.get('server')].start()
-            if cmd.get('command', None) == 'irc_join':
+            elif cmd.get('command', None) == 'irc_join':
                 # irc_networks[cmd.get('server')].join(cmd.get('room'))
                 logging.info('got join to %s' % cmd.get('room'))
                 irc_networks[cmd.get('server')].in_queue.put(
                     {'command': 'join',
                      'room': cmd.get('room')
+                     }
+                )
+            elif cmd.get('command', None) == 'irc_add_op':
+                irc_networks[cmd.get('server')].in_queue.put(
+                    {'command': 'add_op',
+                     'user': cmd.get('user')
+                     }
+                )
+            elif cmd.get('command', None) == 'irc_rm_op':
+                irc_networks[cmd.get('server')].in_queue.put(
+                    {'command': 'rm_op',
+                     'user': cmd.get('user')
                      }
                 )
