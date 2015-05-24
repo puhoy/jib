@@ -46,11 +46,20 @@ else:
     raw_input = input
 
 def get_message_from_event(event):
-    return event.arguments[0].split(":", 1)[0].strip()
+    print(event.arguments[0])
+    return event.arguments[0]
 
 def get_sender_from_event(event):
     return event.source.split("!", 1)[0]
 
+
+''' from http://inamidst.com/whits/code/hebe/irc3.py '''
+def decode(data):
+   for encoding in ('utf-8', 'iso-8859-1', 'cp1252'):
+      try:
+          #logging.debug('trying: %s' % encoding)
+          return data.decode(encoding)
+      except UnicodeDecodeError: continue
 
 class IrcBot(irc.bot.SingleServerIRCBot):
     def __init__(self, nickname, server, port=6667, logfile=False, channel=None, in_queue=None, out_queue=None):
@@ -194,7 +203,7 @@ class IrcBot(irc.bot.SingleServerIRCBot):
         channel = e.target
         if self.logfile:
             with open(self.get_logfile_name(c, e), "a") as log:
-                log.write('[%s] %s: %s\n' % (datetime.datetime.now().ctime(), e.source.split('!')[0], message[0]))
+                log.write('[%s] %s: %s\n' % (datetime.datetime.now().ctime(), e.source.split('!')[0], message))
         if message.startswith('!'):  # > 1 and irc.strings.lower(message[0]) \
                 # == irc.strings.lower(self.connection.get_nickname()):
             self.do_command(e, get_message_from_event(e))
