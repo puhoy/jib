@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """https://www.sevadus.tv/forums/index.php?/topic/774-simple-python-irc-bot/"""
-import re
+
 import socket
 
 import threading
@@ -15,15 +15,8 @@ import json
 
 from utility import tail
 
+from .decorators import op_needed
 
-
-def op_needed(func):
-    def wrap(bot, room, sender, msg):
-        if sender in bot.ops:
-            func(bot, room, sender, msg)
-        else:
-            logging.debug('op_needed decorator: NO OP!')
-    return wrap
 
 
 class IrcBot(threading.Thread):

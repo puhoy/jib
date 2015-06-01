@@ -6,8 +6,8 @@ import getpass
 from optparse import OptionParser
 import queue
 
-from xmpp_bot import XmppBot
-from irc_testbot_old import IrcBot
+from xmpp.xmpp_bot_impl import XmppBot
+from irc.irc_bot import IrcBot
 
 if sys.version_info < (3, 0):
     reload(sys)
@@ -39,6 +39,8 @@ if __name__ == '__main__':
                     help="JID to use")
     optp.add_option("-p", "--password", dest="password",
                     help="password to use")
+    optp.add_option("-a", "--admin", dest="admin",
+                    help="admin jid")
 
     opts, args = optp.parse_args()
 
@@ -54,7 +56,7 @@ if __name__ == '__main__':
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
     # not matter.
-    xmpp_bot = XmppBot(opts.jid, opts.password, in_queue=queue.Queue(), out_queue=queue.Queue())
+    xmpp_bot = XmppBot(opts.jid, opts.password, in_queue=None, out_queue=queue.Queue(), admin=opts.admin)
     xmpp_bot.register_plugin('xep_0030') # Service Discovery
     xmpp_bot.register_plugin('xep_0004') # Data Forms
     xmpp_bot.register_plugin('xep_0060') # PubSub
