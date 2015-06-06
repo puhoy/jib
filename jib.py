@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # If you are working with an OpenFire server, you may need
     # to adjust the SSL version used:
     # xmpp.ssl_version = ssl.PROTOCOL_SSLv3
-    #xmpp.XMPP_CA_CERT_FILE = None
+    #xmpp_bot.XMPP_CA_CERT_FILE = None
     xmpp_bot.reconnect_max_attempts=2
     # If you want to verify the SSL certificates offered by a server:
     #xmpp.ca_certs = "./kwoh.de.crt"
